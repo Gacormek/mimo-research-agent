@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiMo Research Agent — Autonomous AI Research</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #222240;
+            --accent: #6c63ff;
+            --accent-light: #8b83ff;
+            --accent-glow: rgba(108, 99, 255, 0.3);
+            --text-primary: #e8e8f0;
+            --text-secondary: #9090a8;
+            --text-muted: #606078;
+            --border: #2a2a40;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --info: #2196f3;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #ff6b6b);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-light), #ff8a80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .logo-badge {
+            font-size: 0.65rem;
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        
+        /* Input Section */
+        .input-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: stretch;
+        }
+        
+        .input-group input {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .input-group input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Examples */
+        .examples {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .example-chip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-chip:hover {
+            border-color: var(--accent);
+            color: var(--accent-light);
+            background: rgba(108, 99, 255, 0.1);
+        }
+        
+        /* Research Progress */
+        .research-panel {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .research-panel.active {
+            display: block;
+        }
+        
+        .panel-header {
+            background: var(--bg-secondary);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .panel-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .status-running {
+            background: rgba(33, 150, 243, 0.2);
+            color: var(--info);
+        }
+        
+        .status-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--error);
+        }
+        
+        /* Steps Timeline */
+        .steps-container {
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .step {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(42, 42, 64, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .step:last-child {
+            border-bottom: none;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .step-icon.thinking { background: rgba(108, 99, 255, 0.2); }
+        .step-icon.searching { background: rgba(33, 150, 243, 0.2); }
+        .step-icon.reading { background: rgba(255, 152, 0, 0.2); }
+        .step-icon.plan { background: rgba(76, 175, 80, 0.2); }
+        .step-icon.analysis { background: rgba(156, 39, 176, 0.2); }
+        .step-icon.review { background: rgba(0, 188, 212, 0.2); }
+        .step-icon.complete { background: rgba(76, 175, 80, 0.2); }
+        .step-icon.error { background: rgba(244, 67, 54, 0.2); }
+        
+        .step-content {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Report Section */
+        .report-section {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .report-section.active {
+            display: block;
+        }
+        
+        .report-content {
+            padding: 2rem;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+        
+        .report-content h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .report-content h2 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+            color: var(--accent-light);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        .report-content h3 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+        
+        .report-content p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .report-content ul, .report-content ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .report-content li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .report-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        .report-content code {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .report-content a {
+            color: var(--accent-light);
+            text-decoration: none;
+        }
+        
+        .report-content a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Sources Panel */
+        .sources-panel {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+        }
+        
+        .sources-panel h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        
+        .source-item a {
+            color: var(--accent-light);
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .source-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .source-num {
+            background: var(--accent);
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        /* Quality Score */
+        .quality-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin: 1rem 0;
+        }
+        
+        .quality-score {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .quality-score.high { color: var(--success); }
+        .quality-score.medium { color: var(--warning); }
+        .quality-score.low { color: var(--error); }
+        
+        /* History */
+        .history-section {
+            margin-top: 3rem;
+        }
+        
+        .history-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .history-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .history-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+        }
+        
+        .history-topic {
+            font-weight: 500;
+        }
+        
+        .history-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .input-group { flex-direction: column; }
+            .header { padding: 0.75rem 1rem; }
+            .examples { justify-content: flex-start; }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        
+        /* Loading animation */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🔬</div>
+            <span class="logo-text">MiMo Research Agent</span>
+            <span class="logo-badge">AUTONOMOUS</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero" id="heroSection">
+            <h1>Autonomous AI Research Agent</h1>
+            <p>Enter any topic and watch the AI agent autonomously search, analyze, cross-reference, and produce a comprehensive research report with citations.</p>
+        </section>
+
+        <section class="input-section">
+            <div class="input-group">
+                <input type="text" id="topicInput" placeholder="Enter a research topic... (e.g., 'Impact of AI on healthcare diagnostics')" />
+                <button class="btn-primary" id="startBtn" onclick="startResearch()">
+                    🚀 Research
+                </button>
+            </div>
+            <div class="examples">
+                <span class="example-chip" onclick="setTopic('Zero-knowledge proofs in blockchain scalability')">ZK Proofs</span>
+                <span class="example-chip" onclick="setTopic('Impact of large language models on software development')">LLMs in Dev</span>
+                <span class="example-chip" onclick="setTopic('Autonomous AI agents current state and future')">AI Agents</span>
+                <span class="example-chip" onclick="setTopic('DeFi yield farming risks and strategies 2026')">DeFi Yield</span>
+                <span class="example-chip" onclick="setTopic('Quantum computing threat to current cryptography')">Quantum vs Crypto</span>
+            </div>
+        </section>
+
+        <!-- Research Progress Panel -->
+        <section class="research-panel" id="progressPanel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>🤖 Agent Activity</span>
+                    <span class="status-badge status-running" id="statusBadge">Running</span>
+                </div>
+                <span id="stepCount" style="font-size: 0.85rem; color: var(--text-muted);">0 steps</span>
+            </div>
+            <div class="steps-container" id="stepsContainer"></div>
+        </section>
+
+        <!-- Report Section -->
+        <section class="report-section" id="reportSection">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>📄 Research Report</span>
+                    <div class="quality-badge" id="qualityBadge" style="display:none;">
+                        Quality: <span class="quality-score" id="qualityScore"></span>/10
+                    </div>
+                </div>
+                <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="copyReport()">📋 Copy</button>
+            </div>
+            <div class="report-content" id="reportContent"></div>
+            <div class="sources-panel" id="sourcesPanel"></div>
+        </section>
+
+        <!-- History -->
+        <section class="history-section" id="historySection">
+            <h2>Recent Research</h2>
+            <div id="historyList"></div>
+        </section>
+    </div>
+
+    <!-- Markdown parser (simple) -->
+    <script>
+        function parseMarkdown(md) {
+            if (!md) return '';
+            let html = md
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^\- (.*$)/gm, '<li>$1</li>')
+                .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            // Wrap consecutive <li> in <ul>
+            html = html.replace(/(<li>.*?<\/li>(\s*<br>)?)+/g, function(match) {
+                return '<ul>' + match.replace(/<br>/g, '') + '</ul>';
+            });
+            
+            return '<p>' + html + '</p>';
+        }
+
+        const stepIcons = {
+            thinking: '🧠',
+            searching: '🔍',
+            reading: '📖',
+            plan: '📋',
+            analysis: '🔬',
+            review: '✅',
+            complete: '🎉',
+            error: '❌'
+        };
+
+        let currentSessionId = null;
+        let pollInterval = null;
+
+        function setTopic(topic) {
+            document.getElementById('topicInput').value = topic;
+        }
+
+        async function startResearch() {
+            const topic = document.getElementById('topicInput').value.trim();
+            if (!topic) return;
+
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Starting...';
+
+            try {
+                const resp = await fetch('/api/research', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic })
+                });
+                const data = await resp.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    btn.disabled = false;
+                    btn.textContent = '🚀 Research';
+                    return;
+                }
+
+                currentSessionId = data.session_id;
+                
+                // Show progress panel
+                document.getElementById('progressPanel').classList.add('active');
+                document.getElementById('reportSection').classList.remove('active');
+                document.getElementById('stepsContainer').innerHTML = '';
+                
+                // Start polling
+                pollInterval = setInterval(pollStatus, 2000);
+                
+            } catch (e) {
+                alert('Error starting research: ' + e.message);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🚀 Research';
+        }
+
+        async function pollStatus() {
+            if (!currentSessionId) return;
+
+            try {
+                const resp = await fetch(`/api/research/${currentSessionId}`);
+                const data = await resp.json();
+                
+                // Update steps
+                const container = document.getElementById('stepsContainer');
+                container.innerHTML = '';
+                
+                for (const step of data.steps) {
+                    const div = document.createElement('div');
+                    div.className = 'step';
+                    div.innerHTML = `
+                        <div class="step-icon ${step.type}">${stepIcons[step.type] || '⚡'}</div>
+                        <div class="step-content">${escapeHtml(step.content).substring(0, 200)}</div>
+                    `;
+                    container.appendChild(div);
+                }
+                
+                container.scrollTop = container.scrollHeight;
+                document.getElementById('stepCount').textContent = `${data.steps.length} steps`;
+                
+                // Update status badge
+                const badge = document.getElementById('statusBadge');
+                if (data.status === 'completed') {
+                    badge.className = 'status-badge status-completed';
+                    badge.textContent = 'Completed';
+                    clearInterval(pollInterval);
+                    showReport(data);
+                } else if (data.status === 'error') {
+                    badge.className = 'status-badge status-error';
+                    badge.textContent = 'Error';
+                    clearInterval(pollInterval);
+                } else {
+                    badge.className = 'status-badge status-running';
+                    badge.textContent = 'Running';
+                }
+                
+            } catch (e) {
+                console.error('Poll error:', e);
+            }
+        }
+
+        function showReport(data) {
+            if (!data.report) return;
+            
+            const section = document.getElementById('reportSection');
+            section.classList.add('active');
+            
+            document.getElementById('reportContent').innerHTML = parseMarkdown(data.report);
+            
+            // Quality score
+            if (data.review && data.review.quality_score) {
+                const badge = document.getElementById('qualityBadge');
+                const score = document.getElementById('qualityScore');
+                badge.style.display = 'inline-flex';
+                score.textContent = data.review.quality_score;
+                score.className = 'quality-score ' + 
+                    (data.review.quality_score >= 7 ? 'high' : data.review.quality_score >= 5 ? 'medium' : 'low');
+            }
+            
+            // Sources
+            if (data.sources && data.sources.length > 0) {
+                const panel = document.getElementById('sourcesPanel');
+                let html = '<h3>📚 Sources</h3>';
+                data.sources.slice(0, 15).forEach((s, i) => {
+                    html += `<div class="source-item">
+                        <span class="source-num">${i + 1}</span>
+                        <a href="${escapeHtml(s.url)}" target="_blank">${escapeHtml(s.title || s.url)}</a>
+                    </div>`;
+                });
+                panel.innerHTML = html;
+            }
+            
+            loadHistory();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function copyReport() {
+            const content = document.getElementById('reportContent').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Report copied to clipboard!');
+            });
+        }
+
+        async function loadHistory() {
+            try {
+                const resp = await fetch('/api/research');
+                const data = await resp.json();
+                const list = document.getElementById('historyList');
+                list.innerHTML = '';
+                
+                for (const session of data.sessions.slice(0, 10)) {
+                    const div = document.createElement('div');
+                    div.className = 'history-item';
+                    div.onclick = () => loadSession(session.id);
+                    div.innerHTML = `
+                        <div>
+                            <div class="history-topic">${escapeHtml(session.topic)}</div>
+                            <div class="history-meta">${new Date(session.created_at).toLocaleString()}</div>
+                        </div>
+                        <span class="status-badge status-${session.status}">${session.status}</span>
+                    `;
+                    list.appendChild(div);
+                }
+            } catch (e) {}
+        }
+
+        async function loadSession(sessionId) {
+            currentSessionId = sessionId;
+            try {
+                const resp = await fetch(`/api/research/${sessionId}`);
+                const data = await resp.json();
+                
+                document.getElementById('progressPanel').classList.add('active');
+                
+                // Show steps
+                const container = document.getElementById('stepsContainer');
+                container.innerHTML = '';
+                for (const step of data.steps) {
+                    const div = document.createElement('div');
+                    div.className = 'step';
+                    div.innerHTML = `
+                        <div class="step-icon ${step.type}">${stepIcons[step.type] || '⚡'}</div>
+                        <div class="step-content">${escapeHtml(step.content).substring(0, 200)}</div>
+                    `;
+                    container.appendChild(div);
+                }
+                
+                document.getElementById('stepCount').textContent = `${data.steps.length} steps`;
+                
+                const badge = document.getElementById('statusBadge');
+                badge.className = `status-badge status-${data.status}`;
+                badge.textContent = data.status;
+                
+                if (data.status === 'completed') {
+                    showReport(data);
+                }
+            } catch (e) {}
+        }
+
+        // Handle Enter key
+        document.getElementById('topicInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') startResearch();
+        });
+
+        // Load history on page load
+        loadHistory();
+    </script>
+</body>
+</html>
