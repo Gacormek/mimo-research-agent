@@ -18,7 +18,7 @@ import aiohttp
 from aiohttp import web
 
 # Configuration
-LLM_ENDPOINT = "http://43.153.206.68:20128/v1/chat/completions"
+LLM_ENDPOINT = os.getenv("LLM_ENDPOINT")
 LLM_MODEL = "kr/claude-sonnet-4.6"
 SEARCH_API = "https://api.duckduckgo.com/"
 PORT = 80
